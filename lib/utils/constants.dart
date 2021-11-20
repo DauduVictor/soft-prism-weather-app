@@ -25,3 +25,12 @@ Decoration kContainerDecoration = BoxDecoration(
     color:  const Color(0xFFD5C7FF),
   ),
 );
+
+/// Outline border style for search form field
+OutlineInputBorder kOutlinedBorderSearchStyle = OutlineInputBorder(
+  borderSide: BorderSide(
+      color: Colors.white.withOpacity(0.7),
+      width: 1.0, style: BorderStyle.solid
+  ),
+  borderRadius: BorderRadius.circular(11.01),
+);

@@ -20,6 +20,7 @@ class ReusableTransparentContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      clipBehavior: Clip.hardEdge,
       padding: EdgeInsets.symmetric(vertical: verticalPadding, horizontal: horizontalPadding),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(colorOpacity),

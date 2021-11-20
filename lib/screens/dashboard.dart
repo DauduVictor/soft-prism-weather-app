@@ -133,8 +133,89 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                     horizontalPadding: 50.0,
                     verticalPadding: 44.0,
                     widget: Column(
-                      children: const [
-
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 40,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(width: 10),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Today',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 23,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                                SizedBox(height: 5.0),
+                                Text(
+                                  'Mon, 26 Apr',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: const [
+                            Text(
+                              '28',
+                              style: TextStyle(
+                                fontSize: 150,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFFFFFFFF),
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            SizedBox(width: 4.5),
+                            Text(
+                              'o C',
+                              style: TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFFFFFFFF),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: const [
+                            Text(
+                              'Lagos, Nigeria' + ' •',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFFFFFFFF),
+                              ),
+                            ),
+                            SizedBox(width: 4.5),
+                            Text(
+                              '2:00 p.m',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFFFFFFFF),
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
