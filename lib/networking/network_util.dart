@@ -16,12 +16,11 @@ class NetworkHelper {
             .get(Uri.parse(url))
             .then((http.Response response) {
           final String res = response.body;
-          print(res);
           final int statusCode = response.statusCode;
           if (statusCode < 200 || statusCode > 400) throw ('Error occurred');
           return _decoder.convert(res);
         });
-    } catch (e) {
+    }catch (e){
       print(e);
       throw (e);
     }

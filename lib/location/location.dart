@@ -1,5 +1,5 @@
 import 'package:geolocator/geolocator.dart';
-import 'package:softprism/functions/functions.dart';
+import 'package:softprism/utils/functions.dart';
 
 class LocationHelper {
 

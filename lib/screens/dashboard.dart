@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:softprism/bloc/future_values.dart';
 import 'package:softprism/components/header_location.dart';
 import 'package:softprism/components/today_container.dart';
 import 'package:softprism/components/transparent_container.dart';
+import 'package:softprism/model/weather_model.dart';
 import 'package:softprism/screens/search_city.dart';
 import 'package:softprism/utils/constants.dart';
+import 'package:softprism/utils/functions.dart';
 
 class Dashboard extends StatefulWidget {
 
@@ -22,9 +25,29 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   /// Variable to hold the tween value of [Custom Search Font Size]
   late Animation _fontSize;
 
+  ///Instantiating a class for [FutureValues]
+  var futureValue = FutureValues();
+
+  ///Variable to hold the temperature
+  double? temp;
+
+  ///Variable to hold the description
+  String? description;
+
+  /// A Function to get weather data from the api
+  void  _getCurrentWeatherData() async {
+    await futureValue.getUserData().then((WeatherData value) async {
+      setState(() {
+        temp = value.main!.temp;
+        // description = value.weather! as String?;
+      });
+    }).catchError((e) => Functions.showMessage(e));
+  }
+
   @override
   void initState() {
     super.initState();
+    _getCurrentWeatherData();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1400),
       vsync: this
@@ -38,7 +61,6 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
 
     _controller.repeat(reverse: true);
   }
-
 
 
   @override
@@ -102,7 +124,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                 ReusableTodayContainer(
                   constraints: constraints,
                   todayDate: 'Mon, 26 Apr',
-                  degree: '28',
+                  degree: temp!.round().toString(),
                   location: 'Lagos, Nigeria',
                   time: '2:00 p.m',
                 ),

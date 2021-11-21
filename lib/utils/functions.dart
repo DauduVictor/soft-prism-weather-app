@@ -6,7 +6,7 @@ class Functions{
   static void showMessage(String message){
     Fluttertoast.showToast(
       msg: message,
-      toastLength: Toast.LENGTH_SHORT,
+      toastLength: Toast.LENGTH_LONG,
       gravity: ToastGravity.BOTTOM,
       backgroundColor: const Color(0xFFFFFFFF),
       textColor: Colors.black,
