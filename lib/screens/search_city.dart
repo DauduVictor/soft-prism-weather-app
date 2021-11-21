@@ -149,6 +149,7 @@ class _SearchCityState extends State<SearchCity> {
     if(!mounted) return;
     setState(() {
       _showSpinner = true;
+      print(_searchController.value);
     });
     Timer(const Duration(seconds: 5), (){
       setState(() {

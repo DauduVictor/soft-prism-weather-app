@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:softprism/components/header_location.dart';
+import 'package:softprism/components/today_container.dart';
 import 'package:softprism/components/transparent_container.dart';
 import 'package:softprism/screens/search_city.dart';
 import 'package:softprism/utils/constants.dart';
@@ -61,30 +63,8 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    ReusableTransparentContainer(
-                      borderRadius: 20.0,
-                      colorOpacity: 0.1,
-                      horizontalPadding: 16.0,
-                      verticalPadding: 14.0,
-                      widget: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Icon(
-                            Icons.location_on_sharp,
-                            color: Colors.white,
-                            size: 23,
-                          ),
-                          SizedBox(width: 4.1),
-                          Text(
-                            'Lagos, Nigeria',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
+                    const ReusableHeaderLocation(
+                        location: 'Lagos, Nigeria',
                     ),
                     InkWell(
                       onTap: () {
@@ -117,108 +97,12 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                   ],
                 ),
                 ///Today's weather
-                Container(
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight * 0.399,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(15.43),
-                    border: Border.all(
-                      width: 0.77,
-                      color:  const Color(0xFFB9BCF2),
-                    ),
-                  ),
-                  child: ReusableTransparentContainer(
-                    borderRadius: 15.43,
-                    colorOpacity: 0.2,
-                    horizontalPadding: 50.0,
-                    verticalPadding: 44.0,
-                    widget: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              width: 80,
-                              height: 40,
-                              color: Colors.white,
-                            ),
-                            const SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Today',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 23,
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.4,
-                                  ),
-                                ),
-                                SizedBox(height: 5.0),
-                                Text(
-                                  'Mon, 26 Apr',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                    letterSpacing: 0.4,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: const [
-                            Text(
-                              '28',
-                              style: TextStyle(
-                                fontSize: 150,
-                                fontWeight: FontWeight.w500,
-                                color: Color(0xFFFFFFFF),
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            SizedBox(width: 4.5),
-                            Text(
-                              'o C',
-                              style: TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFFFFFFFF),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Text(
-                              'Lagos, Nigeria' + ' •',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFFFFFFFF),
-                              ),
-                            ),
-                            SizedBox(width: 4.5),
-                            Text(
-                              '2:00 p.m',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFFFFFFFF),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                ReusableTodayContainer(
+                  constraints: constraints,
+                  todayDate: 'Mon, 26 Apr',
+                  degree: '28',
+                  location: 'Lagos, Nigeria',
+                  time: '2:00 p.m',
                 ),
                 /// Custom Search, Forecast Report Button
                 Column(
@@ -249,15 +133,15 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                     InkWell(
                       onTap: () {
                         showModalBottomSheet(
+                          context: context,
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
                           ),
                           barrierColor: const Color(0xFFB9BCF2).withOpacity(0.6),
                           isDismissible: true,
                           enableDrag: false,
-                          context: context,
                           builder: (context){
-                            return _bottomReportModalSheet(constraints);
+                            return _bottomReportModalSheet(constraints, context);
                           },
                         );
                       },
@@ -302,7 +186,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
 }
 
 /// Widget for [Report Modal Sheet]
-Widget _bottomReportModalSheet(BoxConstraints constraints) {
+Widget _bottomReportModalSheet(BoxConstraints constraints, BuildContext context) {
   return Container(
     height: constraints.maxHeight,
     decoration: const BoxDecoration(
@@ -335,6 +219,7 @@ Widget _bottomReportModalSheet(BoxConstraints constraints) {
               child: Material(
                 child: InkWell(
                   onTap: () {
+                    Navigator.pop(context);
                   },
                   splashColor: const Color(0xFF7047EB).withOpacity(0.1),
                   child: Container(
@@ -410,8 +295,67 @@ Widget _bottomReportModalSheet(BoxConstraints constraints) {
             const SizedBox(height: 16.0),
             Container(
               width: constraints.maxWidth,
-              height: constraints.maxHeight * 0.19,
               decoration: kContainerDecoration,
+              clipBehavior: Clip.hardEdge,
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: DataTable(
+                dataTextStyle: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.normal,
+                ),
+                dataRowHeight: 65.0,
+                headingRowHeight: 0,
+                columns: const [
+                  DataColumn(label: Text('')),
+                  DataColumn(label: Text('')),
+                  DataColumn(label: Text('')),
+                ],
+                rows: [
+                  DataRow(cells: [
+                    DataCell(Text('April 5')),
+                    DataCell(Container(
+                      width: 50,
+                      height: 30,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage('assets/images/WeatherIcon - 1-23.png'),
+                            fit: BoxFit.contain
+                        ),
+                      ),
+                    )),
+                    DataCell(Text('28 '+'\u2103')),
+                  ]),
+                  DataRow(cells: [
+                    DataCell(Text('April 5')),
+                    DataCell(Container(
+                      width: 50,
+                      height: 30,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage('assets/images/WeatherIcon - 1-23.png'),
+                            fit: BoxFit.contain
+                        ),
+                      ),
+                    )),
+                    DataCell(Text('28 '+'\u2103')),
+                  ]),
+                  DataRow(cells: [
+                    DataCell(Text('April 5')),
+                    DataCell(Container(
+                      width: 50,
+                      height: 30,
+                      decoration: const BoxDecoration(
+                        image: DecorationImage(
+                            image: AssetImage('assets/images/WeatherIcon - 1-23.png'),
+                            fit: BoxFit.contain
+                        ),
+                      ),
+                    )),
+                    DataCell(Text('28 '+'\u2103')),
+                  ]),
+                ],
+              ),
             ),
           ],
         ),
