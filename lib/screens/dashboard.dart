@@ -39,6 +39,8 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     _controller.repeat(reverse: true);
   }
 
+
+
   @override
   void dispose() {
     super.dispose();
