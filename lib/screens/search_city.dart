@@ -1,11 +1,11 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:softprism/components/circle_progress_indicator.dart';
 import 'package:softprism/components/transparent_container.dart';
+import 'package:softprism/model/weather_model.dart';
+import 'package:softprism/networking/user_data_source.dart';
 import 'package:softprism/utils/constants.dart';
-
+import 'package:softprism/utils/functions.dart';
 import 'custom_search_page.dart';
 
 class SearchCity extends StatefulWidget {
@@ -22,9 +22,14 @@ class _SearchCityState extends State<SearchCity> {
   /// Variable to hold the bool value of the [CircleIndicator()]
   bool _showSpinner = false;
 
-  /// key and controller for [Custom_search]
+  /// A [GlobalKey] to hold the form state of search form widget for form validation
   final _formKey = GlobalKey<FormState>();
+
+  /// A [TextEditingController] to control the input text for the search city
   TextEditingController _searchController = TextEditingController();
+
+  /// Variable which holds weather model which would be sent to the required screen
+  WeatherData? weatherData;
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +124,7 @@ class _SearchCityState extends State<SearchCity> {
                 focusedErrorBorder: kOutlinedBorderSearchStyle,
                 errorBorder: kOutlinedBorderSearchStyle,
                 errorStyle: const TextStyle(color: Colors.white),
-                hintText: 'Search Location',
+                hintText: 'Search City',
                 hintStyle: TextStyle(
                   color: Colors.white.withOpacity(0.7),
                   fontSize: 17,
@@ -145,20 +150,26 @@ class _SearchCityState extends State<SearchCity> {
   }
 
   /// Function to call api[Search]
-  void _search() {
+  void _search() async{
     if(!mounted) return;
-    setState(() {
-      _showSpinner = true;
-      print(_searchController.value);
-    });
-    Timer(const Duration(seconds: 5), (){
+    setState(() => _showSpinner = true);
+    String city = _searchController.text;
+    print(_searchController.text);
+    var api = UserDataSource();
+    await api.getCityWeatherData(city).then((WeatherData value) {
+      if(!mounted) return;
       setState(() {
         _showSpinner = false;
+        weatherData = value;
       });
       Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const CustomSearchPage()),
+        context,
+        MaterialPageRoute(builder: (context) =>  CustomSearchPage(weatherModel: weatherData,)),
       );
+    }).catchError((e) {
+      print(e);
+      setState(() => _showSpinner = false);
+      Functions.showMessage('$e , Please check the name of the city and try again');
     });
   }
 

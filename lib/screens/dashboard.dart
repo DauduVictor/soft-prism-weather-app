@@ -34,12 +34,15 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   ///Variable to hold the description
   String? description;
 
+  ///Instance of [DateTime] class
+  var now = DateTime.now();
+
   /// A Function to get weather data from the api
   void  _getCurrentWeatherData() async {
     await futureValue.getUserData().then((WeatherData value) async {
       setState(() {
         temp = value.main!.temp;
-        // description = value.weather! as String?;
+        description = value.weather![2].toString();
       });
     }).catchError((e) => Functions.showMessage(e));
   }
@@ -101,7 +104,8 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                           enableDrag: false,
                           context: context,
                           builder: (context){
-                            return _bottomNotificationModalSheet(constraints);
+                            print(description);
+                            return _bottomNotificationModalSheet(constraints, description!);
                           },
                         );
                       },
@@ -123,10 +127,10 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                 ///Today's weather
                 ReusableTodayContainer(
                   constraints: constraints,
-                  todayDate: 'Mon, 26 Apr',
+                  todayDate: '${now.day}, ${now.month}',
                   degree: temp!.round().toString(),
                   location: 'Lagos, Nigeria',
-                  time: '2:00 p.m',
+                  time: now.hour.toString(),
                 ),
                 /// Custom Search, Forecast Report Button
                 Column(
@@ -389,7 +393,7 @@ Widget _bottomReportModalSheet(BoxConstraints constraints, BuildContext context)
 }
 
 /// Widget for [Notification Modal Sheet]
-Widget _bottomNotificationModalSheet(BoxConstraints constraints) {
+Widget _bottomNotificationModalSheet(BoxConstraints constraints, String description) {
   return Container(
     height: constraints.maxHeight / 2,
     decoration: const BoxDecoration(
@@ -441,8 +445,8 @@ Widget _bottomNotificationModalSheet(BoxConstraints constraints) {
             ),
             const SizedBox(height: 4),
             Column(
-              children: const [
-                Padding(
+              children: [
+                const Padding(
                   padding: EdgeInsets.only(left: 52.0),
                   child: Align(
                     alignment: Alignment.centerLeft,
@@ -454,11 +458,11 @@ Widget _bottomNotificationModalSheet(BoxConstraints constraints) {
                 ),
                 ListTile(
                   horizontalTitleGap: 9,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                  leading: Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
+                  leading: const Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
                   title: Text(
-                    'Its a sunny day in your location',
-                    style: TextStyle(
+                    description,
+                    style: const TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.normal,
                       fontSize: 16,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:softprism/components/header_location.dart';
 import 'package:softprism/components/today_container.dart';
+import 'package:softprism/model/weather_model.dart';
 import 'package:softprism/utils/constants.dart';
 
 class CustomSearchPage extends StatefulWidget {
@@ -8,8 +9,12 @@ class CustomSearchPage extends StatefulWidget {
   static const String id = 'customSearchPage';
 
   const CustomSearchPage({
-    Key? key
+    this.weatherModel,
+    Key? key,
   }) : super(key: key);
+
+  final WeatherData? weatherModel;
+
 
   @override
   _CustomSearchPageState createState() => _CustomSearchPageState();
@@ -54,7 +59,7 @@ class _CustomSearchPageState extends State<CustomSearchPage> {
                 ReusableTodayContainer(
                   constraints: constraints,
                   todayDate: 'Mon, 26 Apr',
-                  degree: '28',
+                  degree: widget.weatherModel!.main!.temp!.round().toString(),
                   location: 'Lagos, Abuja',
                   time: '2:00 p.m',
                 ),
