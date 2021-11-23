@@ -4,11 +4,15 @@
 class WeatherData {
 
   WeatherData({
+    this.coord,
     this.weather,
     this.main,
     this.name,
     this.cod,
   });
+
+  /// A variable to hold coord details
+  Coord? coord;
 
   /// A variable to hold weather detail
   List<Weather>? weather;
@@ -34,6 +38,30 @@ class WeatherData {
     "main": main!.toJson(),
     "name": name,
     "cod": cod,
+  };
+}
+
+///A class to hold coordinate details used by [WeatherData] class
+class Coord {
+  Coord({
+    this.lon,
+    this.lat,
+  });
+
+  /// A variable to hold longitude
+  double? lon;
+
+  /// A variable to hold latitude
+  double? lat;
+
+  factory Coord.fromJson(Map<String, dynamic> json) => Coord(
+    lon: json["lon"].toDouble(),
+    lat: json["lat"].toDouble(),
+  );
+
+  Map<String, dynamic> toJson() => {
+    "lon": lon,
+    "lat": lat,
   };
 }
 

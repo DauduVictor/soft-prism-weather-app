@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
     return  MaterialApp(
       title: 'SoftPrism',
       debugShowCheckedModeBanner: false,
-      initialRoute: SplashScreen.id,
+      initialRoute: CustomSearchPage.id,
       routes: {
         SplashScreen.id:(context) => const SplashScreen(),
         Dashboard.id:(context) => const Dashboard(),

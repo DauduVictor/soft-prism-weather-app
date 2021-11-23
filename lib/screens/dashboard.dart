@@ -7,6 +7,8 @@ import 'package:softprism/model/weather_model.dart';
 import 'package:softprism/screens/search_city.dart';
 import 'package:softprism/utils/constants.dart';
 import 'package:softprism/utils/functions.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 class Dashboard extends StatefulWidget {
 
@@ -32,10 +34,13 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   double? temp;
 
   ///Variable to hold the description
-  String? description;
+  String description = '';
 
   ///Instance of [DateTime] class
   var now = DateTime.now();
+
+  ///Variable to format date in [DD-MM] format
+  String? _dayMonthFormat;
 
   /// A Function to get weather data from the api
   void  _getCurrentWeatherData() async {
@@ -50,6 +55,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   @override
   void initState() {
     super.initState();
+    _dayMonthFormat = DateFormat('EEEE, dd MMM').format(now);
     _getCurrentWeatherData();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1400),
@@ -63,6 +69,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     });
 
     _controller.repeat(reverse: true);
+
   }
 
 
@@ -105,7 +112,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                           context: context,
                           builder: (context){
                             print(description);
-                            return _bottomNotificationModalSheet(constraints, description!);
+                            return _bottomNotificationModalSheet(constraints, description);
                           },
                         );
                       },
@@ -127,10 +134,10 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                 ///Today's weather
                 ReusableTodayContainer(
                   constraints: constraints,
-                  todayDate: '${now.day}, ${now.month}',
-                  degree: temp!.round().toString(),
+                  todayDate: _dayMonthFormat!,
+                  degree: '0', /**temp!.round().toString()**/
                   location: 'Lagos, Nigeria',
-                  time: now.hour.toString(),
+                  time: DateFormat.jm().format(DateTime.now()),
                 ),
                 /// Custom Search, Forecast Report Button
                 Column(
