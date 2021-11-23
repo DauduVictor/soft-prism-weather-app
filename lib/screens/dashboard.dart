@@ -8,7 +8,6 @@ import 'package:softprism/screens/search_city.dart';
 import 'package:softprism/utils/constants.dart';
 import 'package:softprism/utils/functions.dart';
 import 'package:intl/intl.dart';
-import 'package:intl/date_symbol_data_local.dart';
 
 class Dashboard extends StatefulWidget {
 
@@ -28,7 +27,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   late Animation _fontSize;
 
   ///Instantiating a class for [FutureValues]
-  var futureValue = FutureValues();
+  var _futureValue = FutureValues();
 
   ///Variable to hold the temperature
   double? temp;
@@ -44,12 +43,77 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
 
   /// A Function to get weather data from the api
   void  _getCurrentWeatherData() async {
-    await futureValue.getUserData().then((WeatherData value) async {
+    await _futureValue.getUserData().then((WeatherData value) async {
       setState(() {
         temp = value.main!.temp;
-        description = value.weather![2].toString();
+        description = value.weather![0].description.toString();
       });
     }).catchError((e) => Functions.showMessage(e));
+  }
+
+  /// A variable to hold weather data
+  List<WeatherData> _weatherData = [];
+
+  /// A variable to filtered weather data
+  List<WeatherData> _filteredWeatherData = [];
+
+  /// A function to fetch all WeatherData
+  void _getAllWeatherFutureForecast() async{
+    Future<WeatherData> weatherData = _futureValue.getUserData();
+    await weatherData.then((value){
+      if(!mounted) return;
+      setState((){
+        _weatherData.add(value);
+        _filteredWeatherData = _weatherData;
+      });
+    }).catchError((e){
+      print(e);
+      Functions.showMessage(e);
+      if(!mounted) return;
+    });
+  }
+
+
+  ///A widget to build next 5 days weather forecast
+  Widget _buildFutureForecast(){
+    List<DataRow> itemRow = [];
+    if(_filteredWeatherData.length > 0 && _filteredWeatherData.isNotEmpty){
+      for(int i = 0; i < _filteredWeatherData.length; i++ ){
+        WeatherData wData = _filteredWeatherData[i];
+        itemRow.add(
+          DataRow(cells: [
+            const DataCell(Text('April 5')),
+            DataCell(Container(
+              width: 50,
+              height: 30,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                    image: AssetImage('assets/images/WeatherIcon - 1-23.png'),
+                    fit: BoxFit.contain
+                ),
+              ),
+            )),
+            DataCell(Text('${wData.main!.temp} \u2103')),
+          ]),
+        );
+      }
+      return DataTable(
+        dataTextStyle: const TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+        ),
+        dataRowHeight: 65.0,
+        headingRowHeight: 0,
+        columns: const [
+          DataColumn(label: Text('')),
+          DataColumn(label: Text('')),
+          DataColumn(label: Text('')),
+        ],
+        rows: itemRow,
+      );
+    }
+    return Container();
   }
 
   @override
@@ -71,7 +135,6 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     _controller.repeat(reverse: true);
 
   }
-
 
   @override
   void dispose() {
@@ -135,7 +198,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                 ReusableTodayContainer(
                   constraints: constraints,
                   todayDate: _dayMonthFormat!,
-                  degree: '0', /**temp!.round().toString()**/
+                  degree: temp!.round().toString(),
                   location: 'Lagos, Nigeria',
                   time: DateFormat.jm().format(DateTime.now()),
                 ),
@@ -176,7 +239,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                           isDismissible: true,
                           enableDrag: false,
                           builder: (context){
-                            return _bottomReportModalSheet(constraints, context);
+                            return _bottomReportModalSheet(constraints, context, _buildFutureForecast());
                           },
                         );
                       },
@@ -221,7 +284,11 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
 }
 
 /// Widget for [Report Modal Sheet]
-Widget _bottomReportModalSheet(BoxConstraints constraints, BuildContext context) {
+Widget _bottomReportModalSheet(
+    BoxConstraints constraints,
+    BuildContext context,
+    Widget table,
+    ) {
   return Container(
     height: constraints.maxHeight,
     decoration: const BoxDecoration(
@@ -333,64 +400,7 @@ Widget _bottomReportModalSheet(BoxConstraints constraints, BuildContext context)
               decoration: kContainerDecoration,
               clipBehavior: Clip.hardEdge,
               padding: const EdgeInsets.symmetric(horizontal: 2.0),
-              child: DataTable(
-                dataTextStyle: const TextStyle(
-                  color: Colors.black,
-                  fontSize: 16,
-                  fontWeight: FontWeight.normal,
-                ),
-                dataRowHeight: 65.0,
-                headingRowHeight: 0,
-                columns: const [
-                  DataColumn(label: Text('')),
-                  DataColumn(label: Text('')),
-                  DataColumn(label: Text('')),
-                ],
-                rows: [
-                  DataRow(cells: [
-                    DataCell(Text('April 5')),
-                    DataCell(Container(
-                      width: 50,
-                      height: 30,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage('assets/images/WeatherIcon - 1-23.png'),
-                            fit: BoxFit.contain
-                        ),
-                      ),
-                    )),
-                    DataCell(Text('28 '+'\u2103')),
-                  ]),
-                  DataRow(cells: [
-                    DataCell(Text('April 5')),
-                    DataCell(Container(
-                      width: 50,
-                      height: 30,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage('assets/images/WeatherIcon - 1-23.png'),
-                            fit: BoxFit.contain
-                        ),
-                      ),
-                    )),
-                    DataCell(Text('28 '+'\u2103')),
-                  ]),
-                  DataRow(cells: [
-                    DataCell(Text('April 5')),
-                    DataCell(Container(
-                      width: 50,
-                      height: 30,
-                      decoration: const BoxDecoration(
-                        image: DecorationImage(
-                            image: AssetImage('assets/images/WeatherIcon - 1-23.png'),
-                            fit: BoxFit.contain
-                        ),
-                      ),
-                    )),
-                    DataCell(Text('28 '+'\u2103')),
-                  ]),
-                ],
-              ),
+              child: table,
             ),
           ],
         ),
@@ -458,7 +468,7 @@ Widget _bottomNotificationModalSheet(BoxConstraints constraints, String descript
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      '10 minutes ago',
+                      'Just now',
                       style: kNotificationHeaderStyle,
                     ),
                   ),
@@ -468,7 +478,7 @@ Widget _bottomNotificationModalSheet(BoxConstraints constraints, String descript
                   contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
                   leading: const Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
                   title: Text(
-                    description,
+                    '$description in your location',
                     style: const TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.normal,
@@ -486,33 +496,33 @@ Widget _bottomNotificationModalSheet(BoxConstraints constraints, String descript
                 style: kNotificationHeaderStyle,
               ),
             ),
-            Column(
-              children: const [
-                Padding(
-                  padding: EdgeInsets.only(left: 52.0),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      '10 minutes ago',
-                      style: kNotificationHeaderStyle,
-                    ),
-                  ),
-                ),
-                ListTile(
-                  horizontalTitleGap: 9,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                  leading: Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
-                  title: Text(
-                    'Its a sunny day in your location',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.normal,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+            // Column(
+            //   children: const [
+            //     Padding(
+            //       padding: EdgeInsets.only(left: 52.0),
+            //       child: Align(
+            //         alignment: Alignment.centerLeft,
+            //         child: Text(
+            //           '10 minutes ago',
+            //           style: kNotificationHeaderStyle,
+            //         ),
+            //       ),
+            //     ),
+            //     ListTile(
+            //       horizontalTitleGap: 9,
+            //       contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
+            //       leading: Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
+            //       title: Text(
+            //         'Its a sunny day in your location',
+            //         style: TextStyle(
+            //           color: Colors.black,
+            //           fontWeight: FontWeight.normal,
+            //           fontSize: 16,
+            //         ),
+            //       ),
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),

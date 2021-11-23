@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_file.dart';
+import 'package:intl/intl.dart';
 import 'package:softprism/components/header_location.dart';
 import 'package:softprism/components/today_container.dart';
 import 'package:softprism/model/weather_model.dart';
@@ -37,8 +38,8 @@ class _CustomSearchPageState extends State<CustomSearchPage> {
   String? _dayMonthFormat;
 
   /// Function to get finer location details based on the long and lat returned by the api for custom search
-  Future<void> getAddress(double latitude, double longitude) async{
-    List<Placemark> placeMarks = await placemarkFromCoordinates(latitude, longitude);
+  Future<void> getAddress(double? latitude, double? longitude) async{
+    List<Placemark> placeMarks = await placemarkFromCoordinates(latitude!, longitude!);
     Placemark place = placeMarks[0];
     setState(() {
       cityStateLocation = ('${place.locality}, ${place.country}');
@@ -48,7 +49,8 @@ class _CustomSearchPageState extends State<CustomSearchPage> {
   @override
   void initState() {
     super.initState();
-    getAddress(9.076479, 7.398574);
+    _dayMonthFormat = DateFormat('EEEE, dd MMM').format(now);
+    getAddress(widget.weatherModel!.coord!.lat, widget.weatherModel!.coord!.lon);
   }
 
   @override
@@ -88,10 +90,10 @@ class _CustomSearchPageState extends State<CustomSearchPage> {
                 ///Today's weather
                 ReusableTodayContainer(
                   constraints: constraints,
-                  todayDate: 'Mon, 26 Apr',
-                  degree: '0', /**widget.weatherModel!.main!.temp!.round().toString()**/
+                  todayDate: _dayMonthFormat!,
+                  degree: widget.weatherModel!.main!.temp!.round().toString(),
                   location: cityStateLocation!,
-                  time: '2:00 p.m',
+                  time: DateFormat.jm().format(DateTime.now()),
                 ),
               ],
             ),

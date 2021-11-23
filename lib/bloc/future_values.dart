@@ -10,8 +10,4 @@ class FutureValues {
     return weather;
   }
 
-  /// Function that gets in depth location details based on the long and lat of the user
-
-
-
 }

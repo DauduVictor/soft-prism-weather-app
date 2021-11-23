@@ -27,6 +27,7 @@ class WeatherData {
   int? cod;
 
   factory WeatherData.fromJson(Map<String, dynamic> json) => WeatherData(
+    coord: Coord.fromJson(json["coord"]),
     weather: List<Weather>.from(json["weather"].map((x) => Weather.fromJson(x))),
     main: Main.fromJson(json["main"]),
     name: json["name"],
@@ -34,6 +35,7 @@ class WeatherData {
   );
 
   Map<String, dynamic> toJson() => {
+    "coord": coord!.toJson(),
     "weather": List<dynamic>.from(weather!.map((x) => x.toJson())),
     "main": main!.toJson(),
     "name": name,
