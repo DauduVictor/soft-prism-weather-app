@@ -121,6 +121,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     super.initState();
     _dayMonthFormat = DateFormat('EEEE, dd MMM').format(now);
     _getCurrentWeatherData();
+    _getAllWeatherFutureForecast();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1400),
       vsync: this
