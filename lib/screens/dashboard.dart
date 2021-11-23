@@ -3,6 +3,7 @@ import 'package:softprism/bloc/future_values.dart';
 import 'package:softprism/components/header_location.dart';
 import 'package:softprism/components/today_container.dart';
 import 'package:softprism/components/transparent_container.dart';
+import 'package:softprism/model/forecast_weather_model.dart';
 import 'package:softprism/model/weather_model.dart';
 import 'package:softprism/screens/search_city.dart';
 import 'package:softprism/utils/constants.dart';
@@ -52,14 +53,14 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   }
 
   /// A variable to hold weather data
-  List<WeatherData> _weatherData = [];
+  List<ForecastWeatherData> _weatherData = [];
 
   /// A variable to filtered weather data
-  List<WeatherData> _filteredWeatherData = [];
+  List<ForecastWeatherData> _filteredWeatherData = [];
 
   /// A function to fetch all WeatherData
   void _getAllWeatherFutureForecast() async{
-    Future<WeatherData> weatherData = _futureValue.getUserData();
+    Future<ForecastWeatherData> weatherData = _futureValue.getUserForecastData();
     await weatherData.then((value){
       if(!mounted) return;
       setState((){
@@ -79,7 +80,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     List<DataRow> itemRow = [];
     if(_filteredWeatherData.length > 0 && _filteredWeatherData.isNotEmpty){
       for(int i = 0; i < _filteredWeatherData.length; i++ ){
-        WeatherData wData = _filteredWeatherData[i];
+        ForecastWeatherData wData = _filteredWeatherData[i];
         itemRow.add(
           DataRow(cells: [
             const DataCell(Text('April 5')),
@@ -93,7 +94,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                 ),
               ),
             )),
-            DataCell(Text('${wData.main!.temp} \u2103')),
+            DataCell(Text('${wData.hourly![0].temp} \u2103')),
           ]),
         );
       }

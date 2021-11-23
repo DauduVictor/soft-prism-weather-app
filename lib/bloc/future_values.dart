@@ -1,3 +1,4 @@
+import 'package:softprism/model/forecast_weather_model.dart';
 import 'package:softprism/model/weather_model.dart';
 import 'package:softprism/networking/user_data_source.dart';
 
@@ -8,6 +9,13 @@ class FutureValues {
     var data = UserDataSource();
     Future<WeatherData> weather = data.getUserWeatherData();
     return weather;
+  }
+
+  ///Function that gets future forecast weather data based on the users location
+  Future<ForecastWeatherData> getUserForecastData() async{
+    var data = UserDataSource();
+    Future<ForecastWeatherData> weatherForecast = data.getWeatherFutureForecastData();
+    return weatherForecast;
   }
 
 }

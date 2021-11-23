@@ -1,4 +1,5 @@
 import 'package:softprism/location/location.dart';
+import 'package:softprism/model/forecast_weather_model.dart';
 import 'package:softprism/model/weather_model.dart';
 import 'endpoints.dart';
 import 'error_handler.dart';
@@ -38,6 +39,21 @@ class UserDataSource {
       print(res);
       return WeatherData.fromJson(res);
     }).catchError((e) {
+      print(e);
+      errorHandler.handleError(e);
+    });
+  }
+
+  ///A Function that gets future weather forecast using the users location
+  /// It returns a [ForecastWeatherData] model
+  Future<ForecastWeatherData> getWeatherFutureForecastData () async {
+    await location.getLocation();
+    String lat = (location.lat).toString();
+    String long = (location.long).toString();
+    return _netUtil.get(GET_FUTURE_FORECASRT + 'lat=$lat&lon=$long' + API_KEY).then((res) {
+      print(res);
+      return ForecastWeatherData.fromJson(res);
+    }).catchError((e){
       print(e);
       errorHandler.handleError(e);
     });
