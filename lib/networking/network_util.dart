@@ -9,7 +9,6 @@ class NetworkHelper {
   /// A function to do any get request with the url and headers
   /// then sends back a json decoded result
   Future<dynamic> get(String url) async {
-    print(url);
     try {
       return
         http
@@ -21,7 +20,6 @@ class NetworkHelper {
           return _decoder.convert(res);
         });
     }catch (e){
-      print(e);
       throw (e);
     }
   }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/date_symbol_data_file.dart';
 import 'package:intl/intl.dart';
 import 'package:softprism/components/header_location.dart';
 import 'package:softprism/components/today_container.dart';
@@ -27,12 +26,8 @@ class _CustomSearchPageState extends State<CustomSearchPage> {
   ///A variable to hold the city and state of the custom location search
   String? cityStateLocation;
 
-  // TimeZone tz = TimeZone.getTimeZone(country + "/" + city);
-
   ///Instance of [DateTime] class
   var now = DateTime.now();
-
-  // DateTime.now().add(Duration(seconds: timezone - DateTime.now().timeZoneOffset.inSeconds));
 
   ///Variable to format date in [DD-MM] format
   String? _dayMonthFormat;
@@ -82,7 +77,7 @@ class _CustomSearchPageState extends State<CustomSearchPage> {
                     ),
                     const SizedBox(width: 3),
                     ReusableHeaderLocation(
-                      location: cityStateLocation!,
+                      location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
                     ),
                   ],
                 ),
@@ -90,9 +85,9 @@ class _CustomSearchPageState extends State<CustomSearchPage> {
                 ///Today's weather
                 ReusableTodayContainer(
                   constraints: constraints,
-                  todayDate: _dayMonthFormat!,
+                  todayDate: _dayMonthFormat == null ? 'D MM YYYY' :_dayMonthFormat!,
                   degree: widget.weatherModel!.main!.temp!.round().toString(),
-                  location: cityStateLocation!,
+                  location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
                   time: DateFormat.jm().format(DateTime.now()),
                 ),
               ],

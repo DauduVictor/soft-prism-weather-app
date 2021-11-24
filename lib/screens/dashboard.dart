@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:softprism/bloc/future_values.dart';
 import 'package:softprism/components/header_location.dart';
 import 'package:softprism/components/today_container.dart';
 import 'package:softprism/components/transparent_container.dart';
+import 'package:softprism/location/location.dart';
 import 'package:softprism/model/forecast_weather_model.dart';
 import 'package:softprism/model/weather_model.dart';
 import 'package:softprism/screens/search_city.dart';
@@ -21,6 +23,9 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
 
+  /// Instantiating a class of the [LocationHelper]
+  var location = LocationHelper();
+
   /// Variable to hold the animation controller
   late AnimationController _controller;
 
@@ -33,6 +38,12 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   ///Variable to hold the temperature
   double? temp;
 
+  ///Variable to hold the temperature
+  double? lat;
+
+  ///Variable to hold the temperature
+  double? lon;
+
   ///Variable to hold the description
   String description = '';
 
@@ -41,6 +52,31 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
 
   ///Variable to format date in [DD-MM] format
   String? _dayMonthFormat;
+
+  ///Variable to format date in [MM-DD] format
+  late final _monthDayFormat;
+
+  ///A variable to hold the city and state of the custom location search
+  String? cityStateLocation;
+
+  ///Function to get users long and lat with [Location_Helper]
+  void _getUserLocation() async{
+    await location.getLocation();
+      setState((){
+        lat = location.lat;
+        lon = location.long;
+      });
+    getAddress(lat, lon);
+  }
+
+  /// Function to get finer location details based on the long and lat
+  Future<void> getAddress(double? latitude, double? longitude) async{
+    List<Placemark> placeMarks = await placemarkFromCoordinates(latitude!, longitude!);
+    Placemark place = placeMarks[0];
+    setState(() {
+      cityStateLocation = ('${place.locality}, ${place.country}');
+    });
+  }
 
   /// A Function to get weather data from the api
   void  _getCurrentWeatherData() async {
@@ -53,37 +89,73 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   }
 
   /// A variable to hold weather data
-  List<ForecastWeatherData> _weatherData = [];
+  ForecastWeatherData? _weatherData;
 
-  /// A variable to filtered weather data
-  List<ForecastWeatherData> _filteredWeatherData = [];
 
   /// A function to fetch all WeatherData
   void _getAllWeatherFutureForecast() async{
     Future<ForecastWeatherData> weatherData = _futureValue.getUserForecastData();
-    await weatherData.then((value){
+    await weatherData.then((ForecastWeatherData value){
       if(!mounted) return;
       setState((){
-        _weatherData.add(value);
-        _filteredWeatherData = _weatherData;
+        _weatherData = value;
       });
     }).catchError((e){
-      print(e);
       Functions.showMessage(e);
       if(!mounted) return;
     });
+  }
+
+  ///A widget list that holds the hourly forecast
+  List<Widget> _buildHourForecast(){
+    List<Widget> list = [];
+    if(_weatherData!= null){
+      for(int i = 0; i < 5; i++){
+        list.add(_hourlyForecast(_weatherData!.hourly![i]));
+      }
+      return list;
+    }
+    else{
+      list.add(Container());
+      return list;
+    }
+
+  }
+
+  ///Widget used in the hourly forecast container
+  Widget _hourlyForecast(Hourly wData) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text('${wData.temp!.round()} \u2103'),
+        const SizedBox(height: 4),
+        Container(
+          height: 32,
+          width: 32,
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/WeatherIcon - 1-22.png'),
+              fit: BoxFit.contain
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+      ],
+    );
   }
 
 
   ///A widget to build next 5 days weather forecast
   Widget _buildFutureForecast(){
     List<DataRow> itemRow = [];
-    if(_filteredWeatherData.length > 0 && _filteredWeatherData.isNotEmpty){
-      for(int i = 0; i < _filteredWeatherData.length; i++ ){
-        ForecastWeatherData wData = _filteredWeatherData[i];
+    if(_weatherData!= null){
+      for(int i = 1; i < 6; i++){
+        Daily wData = _weatherData!.daily![i];
+        String date = _monthDayFormat!.format(now.add(Duration(days: i+1)));
         itemRow.add(
           DataRow(cells: [
-            const DataCell(Text('April 5')),
+            DataCell(Text(date)),
             DataCell(Container(
               width: 50,
               height: 30,
@@ -94,7 +166,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                 ),
               ),
             )),
-            DataCell(Text('${wData.hourly![0].temp} \u2103')),
+            DataCell(Text('${wData.temp!.day!.round()} \u2103')),
           ]),
         );
       }
@@ -121,6 +193,8 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   void initState() {
     super.initState();
     _dayMonthFormat = DateFormat('EEEE, dd MMM').format(now);
+    _monthDayFormat = DateFormat('MMM dd');
+    _getUserLocation();
     _getCurrentWeatherData();
     _getAllWeatherFutureForecast();
     _controller = AnimationController(
@@ -162,8 +236,8 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const ReusableHeaderLocation(
-                        location: 'Lagos, Nigeria',
+                    ReusableHeaderLocation(
+                      location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
                     ),
                     InkWell(
                       onTap: () {
@@ -176,7 +250,6 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                           enableDrag: false,
                           context: context,
                           builder: (context){
-                            print(description);
                             return _bottomNotificationModalSheet(constraints, description);
                           },
                         );
@@ -200,8 +273,8 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                 ReusableTodayContainer(
                   constraints: constraints,
                   todayDate: _dayMonthFormat!,
-                  degree: temp!.round().toString(),
-                  location: 'Lagos, Nigeria',
+                  degree: temp == null ? '0' : temp!.round().toString(),
+                  location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
                   time: DateFormat.jm().format(DateTime.now()),
                 ),
                 /// Custom Search, Forecast Report Button
@@ -241,7 +314,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                           isDismissible: true,
                           enableDrag: false,
                           builder: (context){
-                            return _bottomReportModalSheet(constraints, context, _buildFutureForecast());
+                            return _bottomReportModalSheet(constraints, context, _buildFutureForecast(), _buildHourForecast());
                           },
                         );
                       },
@@ -290,6 +363,7 @@ Widget _bottomReportModalSheet(
     BoxConstraints constraints,
     BuildContext context,
     Widget table,
+    List<Widget> hForcast
     ) {
   return Container(
     height: constraints.maxHeight,
@@ -304,6 +378,7 @@ Widget _bottomReportModalSheet(
         child: Column(
           children: [
             const SizedBox(height: 21),
+            ///Divider
             Container(
               width: constraints.maxWidth * 0.2,
               decoration: BoxDecoration(
@@ -314,6 +389,7 @@ Widget _bottomReportModalSheet(
               ),
             ),
             const SizedBox(height: 21),
+            ///forecast report button dissmisal
             Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF7047EB).withOpacity(0.1),
@@ -362,12 +438,19 @@ Widget _bottomReportModalSheet(
               ),
             ),
             const SizedBox(height: 15.0),
+            ///today - hourly forecast
             Container(
               width: constraints.maxWidth,
               height: constraints.maxHeight * 0.12,
               decoration: kContainerDecoration,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: hForcast,
+              ),
             ),
             const SizedBox(height: 26.0),
+            ///next forecast
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [

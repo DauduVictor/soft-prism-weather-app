@@ -85,10 +85,10 @@ class ReusableTodayContainer extends StatelessWidget {
               children: [
                 Text(
                   degree,
-                  style: const TextStyle(
-                    fontSize: 150,
+                  style: TextStyle(
+                    fontSize: constraints.maxWidth * 0.35,
                     fontWeight: FontWeight.w500,
-                    color: Color(0xFFFFFFFF),
+                    color: const Color(0xFFFFFFFF),
                     letterSpacing: 0.5,
                   ),
                 ),

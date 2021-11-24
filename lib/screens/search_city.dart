@@ -154,7 +154,6 @@ class _SearchCityState extends State<SearchCity> {
     if(!mounted) return;
     setState(() => _showSpinner = true);
     String city = _searchController.text;
-    print(_searchController.text);
     var api = UserDataSource();
     await api.getCityWeatherData(city).then((WeatherData value) {
       if(!mounted) return;
@@ -167,7 +166,6 @@ class _SearchCityState extends State<SearchCity> {
         MaterialPageRoute(builder: (context) =>  CustomSearchPage(weatherModel: weatherData,)),
       );
     }).catchError((e) {
-      print(e);
       setState(() => _showSpinner = false);
       Functions.showMessage('$e , Please check the name of the city and try again');
     });

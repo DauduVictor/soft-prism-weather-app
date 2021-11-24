@@ -23,10 +23,8 @@ class UserDataSource {
     String lat = (location.lat).toString();
     String long = (location.long).toString();
     return _netUtil.get(GET_WEATHER_DATA + 'lat=$lat&lon=$long' + API_KEY).then((res) {
-      print(res);
       return WeatherData.fromJson(res);
     }).catchError((e){
-      print(e);
       errorHandler.handleError(e);
     });
   }
@@ -35,11 +33,8 @@ class UserDataSource {
   /// It returns a [WeatherData] model
   Future<WeatherData> getCityWeatherData(String city) async {
     return _netUtil.get(GET_CUSTOM_LOCATION_DATA + city + API_KEY).then((res) {
-      print(GET_CUSTOM_LOCATION_DATA + city + API_KEY);
-      print(res);
       return WeatherData.fromJson(res);
     }).catchError((e) {
-      print(e);
       errorHandler.handleError(e);
     });
   }
@@ -51,10 +46,8 @@ class UserDataSource {
     String lat = (location.lat).toString();
     String long = (location.long).toString();
     return _netUtil.get(GET_FUTURE_FORECASRT + 'lat=$lat&lon=$long' + API_KEY).then((res) {
-      print(res);
       return ForecastWeatherData.fromJson(res);
     }).catchError((e){
-      print(e);
       errorHandler.handleError(e);
     });
   }
