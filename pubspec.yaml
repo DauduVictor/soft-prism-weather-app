@@ -21,6 +21,9 @@ dependencies:
   geolocator: 7.6.2
   intl: ^0.17.0
   geocoding: ^2.0.1
+  sqflite: ^2.0.0+3
+  shared_preferences: ^2.0.6
+  path_provider: ^2.0.2
 
 dev_dependencies:
   flutter_test:

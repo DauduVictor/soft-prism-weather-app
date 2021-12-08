@@ -166,8 +166,9 @@ class _SearchCityState extends State<SearchCity> {
         MaterialPageRoute(builder: (context) =>  CustomSearchPage(weatherModel: weatherData,)),
       );
     }).catchError((e) {
+      if(!mounted) return;
       setState(() => _showSpinner = false);
-      Functions.showMessage('$e , Please check the name of the city and try again');
+      Functions.showMessage('$e or check the name of the city and try again');
     });
   }
 

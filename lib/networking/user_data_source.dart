@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:softprism/location/location.dart';
 import 'package:softprism/model/forecast_weather_model.dart';
 import 'package:softprism/model/weather_model.dart';
@@ -16,17 +19,28 @@ class UserDataSource {
   /// Instantiating a class of the [LocationHelper]
   var location = LocationHelper();
 
-  ///A Function that gets weather using the users location
+  ///A Function that gets weather from the database using the users location
   /// It returns a [WeatherData] model
   Future<WeatherData> getUserWeatherData () async {
     await location.getLocation();
     String lat = (location.lat).toString();
     String long = (location.long).toString();
-    return _netUtil.get(GET_WEATHER_DATA + 'lat=$lat&lon=$long' + API_KEY).then((res) {
+    String fileName = 'weather.json';
+    var dir = await getTemporaryDirectory();
+    File file = File(dir.path + '/' + fileName);
+    if(file.existsSync()){
+      final fileData = file.readAsStringSync();
+      final res = jsonDecode(fileData);
       return WeatherData.fromJson(res);
-    }).catchError((e){
-      errorHandler.handleError(e);
-    });
+    }
+    else{
+      return _netUtil.get(GET_WEATHER_DATA + 'lat=$lat&lon=$long' + API_KEY).then((res) {
+        file.writeAsStringSync(jsonEncode(res), mode: FileMode.append);
+        return WeatherData.fromJson(res);
+      }).catchError((e){
+        errorHandler.handleError(e);
+      });
+    }
   }
 
   /// A function that gets the location weather details based on city name

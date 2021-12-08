@@ -5,7 +5,6 @@ class ErrorHandler{
 
   ///Function to handle error messages from the server
   void handleError(dynamic e) {
-    print(e);
     if(e is HandshakeException || e.toString().contains('HandshakeException')){
       throw("Error occurred, please try again");
     }

@@ -59,6 +59,9 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   ///A variable to hold the city and state of the custom location search
   String? cityStateLocation;
 
+  ///Global key for RefreshIndicatorState to refresh weather data
+  final GlobalKey<RefreshIndicatorState> _refreshWeatherKey = GlobalKey<RefreshIndicatorState>();
+
   ///Function to get users long and lat with [Location_Helper]
   void _getUserLocation() async{
     await location.getLocation();
@@ -85,7 +88,11 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
         temp = value.main!.temp;
         description = value.weather![0].description.toString();
       });
-    }).catchError((e) => Functions.showMessage(e));
+      _getAllWeatherFutureForecast();
+    }).catchError((e) {
+      if(!mounted)return;
+      Functions.showMessage(e);
+    });
   }
 
   /// A variable to hold weather data
@@ -101,8 +108,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
         _weatherData = value;
       });
     }).catchError((e){
-      Functions.showMessage(e);
-      if(!mounted) return;
+      if(!mounted)return;
     });
   }
 
@@ -111,7 +117,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     List<Widget> list = [];
     if(_weatherData!= null){
       for(int i = 0; i < 5; i++){
-        list.add(_hourlyForecast(_weatherData!.hourly![i]));
+        list.add(_hourlyForecast(_weatherData!.hourly![i], i));
       }
       return list;
     }
@@ -123,7 +129,9 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   }
 
   ///Widget used in the hourly forecast container
-  Widget _hourlyForecast(Hourly wData) {
+  Widget _hourlyForecast(Hourly wData, int i) {
+    /// Variable to help increase time interval by 2 hours
+    int _nextHour = i * 2;
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -140,7 +148,8 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
             ),
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 1),
+        Text(DateFormat.j().format(DateTime.now().add(Duration(hours: _nextHour)))),
       ],
     );
   }
@@ -152,7 +161,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     if(_weatherData!= null){
       for(int i = 1; i < 6; i++){
         Daily wData = _weatherData!.daily![i];
-        String date = _monthDayFormat!.format(now.add(Duration(days: i+1)));
+        String date = _monthDayFormat!.format(now.add(Duration(days: i)));
         itemRow.add(
           DataRow(cells: [
             DataCell(Text(date)),
@@ -189,6 +198,18 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     return Container();
   }
 
+  /// A function to refresh the dashboard state by calling[initState]
+  Future<void> _refreshDashboard()  async {
+    _getUserLocation();
+    _getCurrentWeatherData();
+    _getAllWeatherFutureForecast();
+  }
+
+  /// A function to get the file holding [Weather_Description_History]
+  void _getOfflineWeatherDescriptionHistory() {
+    _futureValue.getDescriptionHistory();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -196,7 +217,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     _monthDayFormat = DateFormat('MMM dd');
     _getUserLocation();
     _getCurrentWeatherData();
-    _getAllWeatherFutureForecast();
+    _getOfflineWeatherDescriptionHistory();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1400),
       vsync: this
@@ -225,131 +246,146 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
       child: Scaffold(
         backgroundColor: kPurpleColor,
         body: LayoutBuilder(
-          builder: (context, constraints) => Container(
-            padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 47),
-            height: constraints.maxHeight,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                /// Location, notification widgets
-                Row(
+          builder: (context, constraints) => RefreshIndicator(
+            key: _refreshWeatherKey,
+            onRefresh: _refreshDashboard,
+            backgroundColor: Colors.white,
+            color: kPurpleColor,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Container(
+                height: constraints.maxHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Column(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    ReusableHeaderLocation(
-                      location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
-                    ),
-                    InkWell(
-                      onTap: () {
-                        showModalBottomSheet(
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
-                          ),
-                          barrierColor: const Color(0xFFB9BCF2).withOpacity(0.6),
-                          isDismissible: true,
-                          enableDrag: false,
-                          context: context,
-                          builder: (context){
-                            return _bottomNotificationModalSheet(constraints, description);
-                          },
-                        );
-                      },
-                      splashColor: Colors.white.withOpacity(0.3),
-                      child: const ReusableTransparentContainer(
-                        borderRadius: 10.0,
-                        colorOpacity: 0.2,
-                        horizontalPadding: 13.0,
-                        verticalPadding: 11.0,
-                        widget: Icon(
-                          Icons.notifications,
-                          color: Colors.white,
-                          size: 27,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                ///Today's weather
-                ReusableTodayContainer(
-                  constraints: constraints,
-                  todayDate: _dayMonthFormat!,
-                  degree: temp == null ? '0' : temp!.round().toString(),
-                  location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
-                  time: DateFormat.jm().format(DateTime.now()),
-                ),
-                /// Custom Search, Forecast Report Button
-                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AnimatedBuilder(
-                      animation: _controller,
-                      builder: (context, child) {
-                        return InkWell(
-                          onTap: () {
-                            Navigator.pushNamed(context, SearchCity.id);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(2.0),
-                            child: Text(
-                              'Custom search ?',
-                              style: TextStyle(
-                                fontSize: _fontSize.value,
+                    /// Location, notification widgets
+                    Padding(
+                      padding: const EdgeInsets.only(top: 47.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ReusableHeaderLocation(
+                            location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
+                          ),
+                          InkWell(
+                            onTap: () {
+                              showModalBottomSheet(
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+                                ),
+                                barrierColor: const Color(0xFFB9BCF2).withOpacity(0.6),
+                                isDismissible: true,
+                                enableDrag: false,
+                                context: context,
+                                builder: (context){
+                                  return _bottomNotificationModalSheet(constraints, description);
+                                },
+                              );
+                            },
+                            splashColor: Colors.white.withOpacity(0.3),
+                            child: const ReusableTransparentContainer(
+                              borderRadius: 10.0,
+                              colorOpacity: 0.2,
+                              horizontalPadding: 13.0,
+                              verticalPadding: 11.0,
+                              widget: Icon(
+                                Icons.notifications,
                                 color: Colors.white,
-                                fontWeight: FontWeight.w500,
+                                size: 27,
                               ),
                             ),
                           ),
-                        );
-                      },
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 23),
-                    InkWell(
-                      onTap: () {
-                        showModalBottomSheet(
-                          context: context,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+                    /// Today's weather
+                    ReusableTodayContainer(
+                      constraints: constraints,
+                      todayDate: _dayMonthFormat!,
+                      degree: temp == null ? '0' : temp!.round().toString(),
+                      location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
+                      time: DateFormat.jm().format(DateTime.now()),
+                    ),
+                    /// Custom Search, Forecast Report Button
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 47.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AnimatedBuilder(
+                            animation: _controller,
+                            builder: (context, child) {
+                              return InkWell(
+                                onTap: () {
+                                  Navigator.pushNamed(context, SearchCity.id);
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2.0),
+                                  child: Text(
+                                    'Custom search ?',
+                                    style: TextStyle(
+                                      fontSize: _fontSize.value,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          barrierColor: const Color(0xFFB9BCF2).withOpacity(0.6),
-                          isDismissible: true,
-                          enableDrag: false,
-                          builder: (context){
-                            return _bottomReportModalSheet(constraints, context, _buildFutureForecast(), _buildHourForecast());
-                          },
-                        );
-                      },
-                      splashColor: Colors.white.withOpacity(0.3),
-                      child: ReusableTransparentContainer(
-                        borderRadius: 8.01,
-                        colorOpacity: 0.2,
-                        horizontalPadding: 10.0,
-                        verticalPadding: 21.0,
-                        widget: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: const [
-                            SizedBox(width: 50),
-                            Text(
-                              'Forecast Report',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.w600,
+                          const SizedBox(height: 23),
+                          InkWell(
+                            onTap: () {
+                              showModalBottomSheet(
+                                context: context,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+                                ),
+                                barrierColor: const Color(0xFFB9BCF2).withOpacity(0.6),
+                                isDismissible: true,
+                                enableDrag: false,
+                                builder: (context){
+                                  return _bottomReportModalSheet(constraints, context, _buildFutureForecast(), _buildHourForecast());
+                                },
+                              );
+                            },
+                            splashColor: Colors.white.withOpacity(0.3),
+                            child: ReusableTransparentContainer(
+                              borderRadius: 8.01,
+                              colorOpacity: 0.2,
+                              horizontalPadding: 10.0,
+                              verticalPadding: 21.0,
+                              widget: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: const [
+                                  SizedBox(width: 50),
+                                  Text(
+                                    'Forecast Report',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(width: 21),
+                                  Icon(
+                                    Icons.keyboard_arrow_up_sharp,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
+                                ],
                               ),
                             ),
-                            SizedBox(width: 21),
-                            Icon(
-                              Icons.keyboard_arrow_up_sharp,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
