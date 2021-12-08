@@ -107,6 +107,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
       setState((){
         _weatherData = value;
       });
+      _getOfflineWeatherDescriptionHistory();
     }).catchError((e){
       if(!mounted)return;
     });
@@ -217,7 +218,6 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     _monthDayFormat = DateFormat('MMM dd');
     _getUserLocation();
     _getCurrentWeatherData();
-    _getOfflineWeatherDescriptionHistory();
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1400),
       vsync: this

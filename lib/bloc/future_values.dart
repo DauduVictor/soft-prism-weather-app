@@ -15,6 +15,8 @@ class FutureValues {
   /// Function to get history of weather description from the database [file]
   Future<void> getDescriptionHistory() async{
     var myFile = File('weather.json');
+    myFile.open();
+    myFile.readAsString();
     print(myFile);
   }
 
