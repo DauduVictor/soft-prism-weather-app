@@ -26,20 +26,26 @@ class _ShazamState extends State<Shazam> with TickerProviderStateMixin {
   /// A variable to hold the box width tween
   Animation? _widthTweenAnimation;
 
-  // /// A variable to hold the box color tween
-  // late Animation _colorTweenAnimation;
+  /// A variable to hold the box color tween
+  late Animation _colorTweenAnimation;
 
   /// A variable to hold the most outer box width tween
   Animation? _widthMTweenAnimation;
 
-  // /// A variable to hold the most outer box color tween
-  // late Animation _colorMTweenAnimation;
+  /// A variable to hold the most outer box color tween
+  late Animation _colorMTweenAnimation;
 
   /// A variable to hold the curve type used in the animation
   late CurvedAnimation _curve;
 
   /// A variable to hold the curve type used in the box animation
   late CurvedAnimation _boxCurve;
+
+  // A variable to hold the curve type used in the most outer box animation
+  late CurvedAnimation _oCurve;
+
+  /// A variable to hold the curve type used in the most outer box animation
+  late CurvedAnimation _mCurve;
 
   /// Variable to hold the tween value of the animation
   late Animation<double> _elevationAnimation;
@@ -80,25 +86,31 @@ class _ShazamState extends State<Shazam> with TickerProviderStateMixin {
       period: const Duration(milliseconds: 1600),
     );
 
-    // /// Variable to hold color tween for the color outer box
-    // _colorTweenAnimation = ColorTween(begin: Colors.blueGrey.withOpacity(0.7), end: Colors.transparent).animate(_circleController);
-    //
-    // /// Variable to hold color tween for the color most outer box
-    // _colorTweenAnimation = ColorTween(begin: Colors.blueGrey.withOpacity(0.7), end: Colors.transparent).animate(_circleControllerOuter);
+    /// Variable to hold the outer box animation curve
+    _oCurve = CurvedAnimation(parent: _circleController, curve: Curves.bounceInOut);
+
+    /// Variable to hold color tween for the color outer box
+    _colorTweenAnimation = ColorTween(begin: Colors.blueGrey.withOpacity(0.7), end: Colors.transparent).animate(_circleController);
+
+    /// Variable to hold the most outer box animation curve
+    _mCurve = CurvedAnimation(parent: _circleControllerOuter, curve: Curves.bounceInOut);
+
+    /// Variable to hold color tween for the color most outer box
+    _colorMTweenAnimation = ColorTween(begin: Colors.blueGrey.withOpacity(0.7), end: Colors.transparent).animate(_circleControllerOuter);
 
     /// Variable to hold the tween value for the inner box
     _elevationAnimation = Tween(begin: 1.0, end: 25.0).animate(_controller);
 
     /// Variable to hold the tween value for the width outer box
-    _widthTweenAnimation = Tween(begin: 7.0, end: 1.4).animate(_circleController);
+    _widthTweenAnimation = Tween(begin: 7.0, end: 0.2).animate(_circleController);
 
     /// Variable to hold the tween value for the width most outer box
-    _widthMTweenAnimation = Tween(begin: 7.0, end: 1.4).animate(_circleControllerOuter);
+    _widthMTweenAnimation = Tween(begin: 7.0, end: 0.2).animate(_circleControllerOuter);
 
     /// Variable to hold the animation curve
     _curve = CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn);
 
-    /// Variable to hold the animation curve
+    /// Variable to hold the box animation curve
     _boxCurve = CurvedAnimation(parent: _controller, curve: Curves.bounceInOut);
 
     /// Variable to animate between the given tween sequences
@@ -149,28 +161,36 @@ class _ShazamState extends State<Shazam> with TickerProviderStateMixin {
               child: Center(
                 child: Stack(
                   children: [
+                    /// Most outer box
                     Center(
-                      child: Container(
-                        height: 350.0 + (_circleControllerOuter.value * 20),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.transparent,
-                          border: Border.all(
-                            color: Colors.blueGrey.withOpacity(0.7),
-                            width: _widthMTweenAnimation!.value,
+                      child: Transform.scale(
+                        scale: 1.7 + _mCurve.value,
+                        child: Container(
+                          height: 350.0 + (_circleControllerOuter.value * 20),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.transparent,
+                            border: Border.all(
+                              color: _colorMTweenAnimation.value,
+                              width: _widthMTweenAnimation!.value,
+                            ),
                           ),
                         ),
                       ),
                     ),
+                    /// Outer box
                     Center(
-                      child: Container(
-                        height: 300.0 + (_circleController.value * 20),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.transparent,
-                          border: Border.all(
-                            color: Colors.blueGrey.withOpacity(0.7),
-                            width: _widthTweenAnimation!.value,
+                      child: Transform.scale(
+                        scale: 1.7 + _oCurve.value,
+                        child: Container(
+                          height: 300.0 + (_circleController.value * 20),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.transparent,
+                            border: Border.all(
+                              color: _colorTweenAnimation.value,
+                              width: _widthTweenAnimation!.value,
+                            ),
                           ),
                         ),
                       ),
@@ -188,9 +208,9 @@ class _ShazamState extends State<Shazam> with TickerProviderStateMixin {
                             color: Colors.white.withOpacity(0.9),
                             shape: BoxShape.circle,
                             boxShadow: [
-                              for(int i = 1; i < 4; i++)
+                              for(double i = 0.85; i < 3.5; i++)
                                 BoxShadow(
-                                  color: Colors.blueGrey.withOpacity(0.15),
+                                  color: Colors.blueGrey.withOpacity(0.22),
                                   spreadRadius: _shadowTweenAnimation!.value * i,
                                 ),
                             ]
@@ -205,6 +225,30 @@ class _ShazamState extends State<Shazam> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Center(
+                          child: Text(
+                            'Listening for music',
+                            style: TextStyle(
+                              fontSize: 21,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          'Make sure your device can hear the music clearly',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.white.withOpacity(0.65),
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

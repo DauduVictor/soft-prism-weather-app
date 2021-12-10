@@ -4,6 +4,7 @@ import 'package:softprism/screens/custom_search_page.dart';
 import 'package:softprism/screens/dashboard.dart';
 import 'package:softprism/screens/search_city.dart';
 import 'package:softprism/screens/shazam_animation.dart';
+import 'package:softprism/screens/three_loaders.dart';
 import 'package:softprism/splash_screen.dart';
 
 void main() {
@@ -22,13 +23,14 @@ class MyApp extends StatelessWidget {
     return  MaterialApp(
       title: 'SoftPrism',
       debugShowCheckedModeBanner: false,
-      initialRoute: Shazam.id,
+      initialRoute: ThreeLoaders.id,
       routes: {
         SplashScreen.id:(context) => const SplashScreen(),
         Dashboard.id:(context) => const Dashboard(),
         SearchCity.id:(context) => const SearchCity(),
         CustomSearchPage.id:(context) => const CustomSearchPage(),
         Shazam.id:(context) => const Shazam(),
+        ThreeLoaders.id:(context) => const ThreeLoaders(),
       },
       theme: ThemeData(fontFamily: 'DMSans'),
     );
