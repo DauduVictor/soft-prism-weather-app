@@ -26,19 +26,35 @@ class _SplashScreenState extends State<SplashScreen> {
   }
   @override
   Widget build(BuildContext context) {
-    return const SafeArea(
+    return SafeArea(
         top: false,
         bottom: false,
         child: Scaffold(
           backgroundColor: kPurpleColor,
           body: Center(
-            child: Text(
-              'Soft Prism',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 38,
-                 fontWeight: FontWeight.w600,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                  'Weather App',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 38,
+                     fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 5),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                        image: AssetImage('assets/images/WeatherIcon - 1-38.png'),
+                        fit: BoxFit.contain
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         )

@@ -29,8 +29,8 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   /// Variable to hold the animation controller
   late AnimationController _controller;
 
-  /// Variable to hold the tween value of [Custom Search Font Size]
-  late Animation _fontSize;
+  /// Variable to hold the curve animation
+  late CurvedAnimation _curve;
 
   ///Instantiating a class for [FutureValues]
   var _futureValue = FutureValues();
@@ -59,8 +59,27 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   ///A variable to hold the city and state of the custom location search
   String? cityStateLocation;
 
+  /// Variable to hold the greeting
+  String? _greeting;
+
   ///Global key for RefreshIndicatorState to refresh weather data
   final GlobalKey<RefreshIndicatorState> _refreshWeatherKey = GlobalKey<RefreshIndicatorState>();
+
+  /// Function that shows greetings based on the users local time
+  void _greetingMessage() {
+
+    ///Instance of [DateTime] class
+    var now = DateTime.now().hour;
+    if (now < 12) {
+      setState(() => _greeting = 'Good Morning') ;
+    }
+    else if (now < 17) {
+      setState(() => _greeting = 'Good Afternoon');
+    }
+    else {
+      setState(() => _greeting = 'Good Evening');
+    }
+  }
 
   ///Function to get users long and lat with [Location_Helper]
   void _getUserLocation() async{
@@ -155,7 +174,6 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     );
   }
 
-
   ///A widget to build next 5 days weather forecast
   Widget _buildFutureForecast(){
     List<DataRow> itemRow = [];
@@ -216,20 +234,21 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     super.initState();
     _dayMonthFormat = DateFormat('EEEE, dd MMM').format(now);
     _monthDayFormat = DateFormat('MMM dd');
+    _greetingMessage();
     _getUserLocation();
     _getCurrentWeatherData();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1700),
       vsync: this
     );
-
-    _fontSize = Tween(begin: 18.0, end: 20.0).animate(_controller);
 
     _controller.addListener(() {
       setState(() {});
     });
 
-    _controller.repeat(reverse: true);
+    _controller.repeat();
+
+    _curve = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
 
   }
 
@@ -255,51 +274,76 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
               physics: const AlwaysScrollableScrollPhysics(),
               child: Container(
                 height: constraints.maxHeight,
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                padding: const EdgeInsets.only(left: 25.0, right: 25.0, top: 12.0),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     /// Location, notification widgets
                     Padding(
-                      padding: const EdgeInsets.only(top: 47.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      padding: const EdgeInsets.only(top: 20.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          ReusableHeaderLocation(
-                            location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
-                          ),
-                          InkWell(
-                            onTap: () {
-                              showModalBottomSheet(
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
-                                ),
-                                barrierColor: const Color(0xFFB9BCF2).withOpacity(0.6),
-                                isDismissible: true,
-                                enableDrag: false,
-                                context: context,
-                                builder: (context){
-                                  return _bottomNotificationModalSheet(constraints, description);
-                                },
-                              );
-                            },
-                            splashColor: Colors.white.withOpacity(0.3),
-                            child: const ReusableTransparentContainer(
-                              borderRadius: 10.0,
-                              colorOpacity: 0.2,
-                              horizontalPadding: 13.0,
-                              verticalPadding: 11.0,
-                              widget: Icon(
-                                Icons.notifications,
-                                color: Colors.white,
-                                size: 27,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ReusableHeaderLocation(
+                                location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
                               ),
+                              InkWell(
+                                onTap: () {
+                                  showModalBottomSheet(
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+                                    ),
+                                    barrierColor: const Color(0xFFB9BCF2).withOpacity(0.6),
+                                    isDismissible: true,
+                                    enableDrag: false,
+                                    context: context,
+                                    builder: (context){
+                                      return _bottomNotificationModalSheet(constraints, description);
+                                    },
+                                  );
+                                },
+                                splashColor: Colors.white.withOpacity(0.3),
+                                child: const ReusableTransparentContainer(
+                                  borderRadius: 10.0,
+                                  colorOpacity: 0.2,
+                                  horizontalPadding: 13.0,
+                                  verticalPadding: 11.0,
+                                  widget: Icon(
+                                    Icons.notifications,
+                                    color: Colors.white,
+                                    size: 27,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 30),
+                          /// Greeting text
+                          Text(
+                            _greeting != null ? _greeting! : 'Good day',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 29,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          /// Description
+                          Text(
+                            description == ''  ? 'Loading...' : description.toString() ,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 19,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
                       ),
                     ),
+                    SizedBox(height: constraints.maxHeight * 0.1),
                     /// Today's weather
                     ReusableTodayContainer(
                       constraints: constraints,
@@ -308,34 +352,63 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                       location: cityStateLocation == null ? 'City, Country' : cityStateLocation!,
                       time: DateFormat.jm().format(DateTime.now()),
                     ),
+                    const Spacer(),
                     /// Custom Search, Forecast Report Button
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 47.0),
+                      padding: const EdgeInsets.only(bottom: 27.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AnimatedBuilder(
                             animation: _controller,
                             builder: (context, child) {
-                              return InkWell(
+                              return GestureDetector(
                                 onTap: () {
                                   Navigator.pushNamed(context, SearchCity.id);
                                 },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: Text(
-                                    'Custom search ?',
-                                    style: TextStyle(
-                                      fontSize: _fontSize.value,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w500,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  elevation: 3,
+                                  borderRadius: BorderRadius.circular(19),
+                                  shadowColor: kPurpleColor.withOpacity(0.1),
+                                  child: Container(
+                                    clipBehavior: Clip.hardEdge,
+                                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 9.0),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(19),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.white.withOpacity(0.07),
+                                            spreadRadius: _curve.value * 12,
+                                          ),
+                                        ]
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: const [
+                                        Text(
+                                          'Custom search',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        SizedBox(width: 5),
+                                        Icon(
+                                          Icons.search,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ),
                               );
                             },
                           ),
-                          const SizedBox(height: 23),
+                          const SizedBox(height: 40),
                           InkWell(
                             onTap: () {
                               showModalBottomSheet(

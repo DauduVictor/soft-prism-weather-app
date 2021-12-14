@@ -14,6 +14,9 @@ class _ThreeLoadersState extends State<ThreeLoaders> with TickerProviderStateMix
   /// Initializing the controller
   late AnimationController _controller;
 
+  /// Variable to hold the status of the _controller
+  bool _showShape = false;
+
   /// Initializing the curve
   late CurvedAnimation _curve;
 
@@ -37,10 +40,28 @@ class _ThreeLoadersState extends State<ThreeLoaders> with TickerProviderStateMix
       lowerBound: 0,
       upperBound: 1,
     );
+
+    /// Make the [Animation_Contoller] know about the new values being fired
     _controller.addListener(() {
       setState(() {});
     });
+
+    /// After the animation is complete, redo the animation by going the reverse way and starting again
     _controller.repeat(reverse: true);
+
+    /// Function to listen to the current state of the controller and update its value
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          _showShape = false;
+        });
+      }
+      if (status == AnimationStatus.reverse) {
+        setState(() {
+          _showShape = true;
+        });
+      }
+    });
 
     /// Variable the curve for the box animation
     _curve = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
@@ -48,8 +69,8 @@ class _ThreeLoadersState extends State<ThreeLoaders> with TickerProviderStateMix
     /// Variable the tween for the box animation
     _tween = Tween(begin: 1.0, end: 250.0).animate(_curve);
 
-    /// Variable the tween for the box animation
-    _sizeTween = Tween(begin: 60.0, end: 10.0).animate(_controller);
+    /// Variable the tween for the box size animation
+    _sizeTween = Tween(begin: 45.0, end: 10.0).animate(_controller);
 
     /// Variable the tween for the color animation
     _brownColorTween = ColorTween(begin: Colors.brown.shade800, end: Colors.black).animate(_controller);
@@ -88,14 +109,26 @@ class _ThreeLoadersState extends State<ThreeLoaders> with TickerProviderStateMix
                       borderRadius: BorderRadius.circular(6.0),
                     ),
                   ),
-                  CustomPaint(
-                    painter: TriangleShapePainter(
-                      color: _blueColorTween.value,
+                  Container(
+                    width: _sizeTween.value,
+                    height: _sizeTween.value,
+                    margin: EdgeInsets.only(top: _tween.value),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      borderRadius: BorderRadius.circular(6.0),
                     ),
-                    child: Container(
-                      width: _sizeTween.value,
-                      height: _sizeTween.value,
+                    child: _showShape == true ? CustomPaint(
+                      painter: TriangleShapePainter(
+                        color: _blueColorTween.value,
+                      ),
+                    ) :  Container(
+                      width: 10.0,
+                      height: 10.0,
                       margin: EdgeInsets.only(top: _tween.value),
+                      decoration: BoxDecoration(
+                        color: _blueColorTween.value,
+                        shape: BoxShape.circle,
+                      ),
                     ),
                   ),
                   Container(
@@ -147,4 +180,3 @@ class TriangleShapePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
-
