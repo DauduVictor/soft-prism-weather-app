@@ -71,7 +71,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     ///Instance of [DateTime] class
     var now = DateTime.now().hour;
     if (now < 12) {
-      setState(() => _greeting = 'Good Morning') ;
+      setState(() => _greeting = 'Good Morning');
     }
     else if (now < 17) {
       setState(() => _greeting = 'Good Afternoon');
@@ -114,7 +114,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     });
   }
 
-  /// A variable to hold weather data
+  /// A variable to hold daily and hourly weather data
   ForecastWeatherData? _weatherData;
 
 
@@ -136,7 +136,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   List<Widget> _buildHourForecast(){
     List<Widget> list = [];
     if(_weatherData!= null){
-      for(int i = 0; i < 5; i++){
+      for(int i = 1; i < 6; i++){
         list.add(_hourlyForecast(_weatherData!.hourly![i], i));
       }
       return list;
@@ -219,9 +219,14 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
 
   /// A function to refresh the dashboard state by calling[initState]
   Future<void> _refreshDashboard()  async {
-    _getUserLocation();
-    _getCurrentWeatherData();
-    _getAllWeatherFutureForecast();
+    setState((){
+      temp = null;
+      lat = null;
+      lon = null;
+      description = '';
+      _weatherData = null;
+    });
+
   }
 
   /// A function to get the file holding [Weather_Description_History]
@@ -672,7 +677,7 @@ Widget _bottomNotificationModalSheet(BoxConstraints constraints, String descript
                   contentPadding: const EdgeInsets.symmetric(horizontal: 4.0),
                   leading: const Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
                   title: Text(
-                    '$description in your location',
+                    description != '' ? '$description at your location' : 'Loading...',
                     style: const TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.normal,
@@ -690,33 +695,88 @@ Widget _bottomNotificationModalSheet(BoxConstraints constraints, String descript
                 style: kNotificationHeaderStyle,
               ),
             ),
-            // Column(
-            //   children: const [
-            //     Padding(
-            //       padding: EdgeInsets.only(left: 52.0),
-            //       child: Align(
-            //         alignment: Alignment.centerLeft,
-            //         child: Text(
-            //           '10 minutes ago',
-            //           style: kNotificationHeaderStyle,
-            //         ),
-            //       ),
-            //     ),
-            //     ListTile(
-            //       horizontalTitleGap: 9,
-            //       contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
-            //       leading: Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
-            //       title: Text(
-            //         'Its a sunny day in your location',
-            //         style: TextStyle(
-            //           color: Colors.black,
-            //           fontWeight: FontWeight.normal,
-            //           fontSize: 16,
-            //         ),
-            //       ),
-            //     ),
-            //   ],
-            // ),
+            /// data coming from the users storage / database (dummy data)
+            Column(
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(left: 52.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '10 minutes ago',
+                      style: kNotificationHeaderStyle,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  horizontalTitleGap: 9,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                  leading: Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
+                  title: Text(
+                    'Its a sunny day at your location',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(left: 52.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Yesterday',
+                      style: kNotificationHeaderStyle,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  horizontalTitleGap: 9,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                  leading: Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
+                  title: Text(
+                    'Cloudy at your location',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(left: 52.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '2 days ago',
+                      style: kNotificationHeaderStyle,
+                    ),
+                  ),
+                ),
+                ListTile(
+                  horizontalTitleGap: 9,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 4.0),
+                  leading: Icon(Icons.wb_sunny, color: Color(0xFFFA9E42), size: 21),
+                  title: Text(
+                    'Few clouds at your location',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.normal,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

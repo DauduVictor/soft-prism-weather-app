@@ -53,41 +53,43 @@ class _SearchCityState extends State<SearchCity> {
               builder: (context, constraints) => Container(
                 padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 47),
                 height: constraints.maxHeight,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    /// Search box
-                    _searchBox(),
-                    /// Search Button
-                    InkWell(
-                      onTap: () {
-                        FocusScopeNode currentFocus = FocusScope.of(context);
-                        if(!currentFocus.hasPrimaryFocus) currentFocus.unfocus();
-                        if (!_showSpinner){
-                          if(_formKey.currentState!.validate()){
-                            _search();
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      /// Search box
+                      _searchBox(),
+                      /// Search Button
+                      InkWell(
+                        onTap: () {
+                          FocusScopeNode currentFocus = FocusScope.of(context);
+                          if(!currentFocus.hasPrimaryFocus) currentFocus.unfocus();
+                          if (!_showSpinner){
+                            if(_formKey.currentState!.validate()){
+                              _search();
+                            }
                           }
-                        }
-                      },
-                      splashColor: Colors.white.withOpacity(0.3),
-                      child: ReusableTransparentContainer(
-                        borderRadius: 10.0,
-                        colorOpacity: 0.2,
-                        horizontalPadding: 13.0,
-                        verticalPadding: 11.0,
-                        widget: _showSpinner ?
-                        const SizedBox(
-                          width: 25,
-                          height: 25,
-                          child: CircleProgressIndicator(),
-                        ) : const Icon(
-                          Icons.search,
-                          color: Colors.white,
-                          size: 27,
+                        },
+                        splashColor: Colors.white.withOpacity(0.3),
+                        child: ReusableTransparentContainer(
+                          borderRadius: 10.0,
+                          colorOpacity: 0.2,
+                          horizontalPadding: 13.0,
+                          verticalPadding: 11.0,
+                          widget: _showSpinner ?
+                          const SizedBox(
+                            width: 25,
+                            height: 25,
+                            child: CircleProgressIndicator(),
+                          ) : const Icon(
+                            Icons.search,
+                            color: Colors.white,
+                            size: 27,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -132,7 +134,8 @@ class _SearchCityState extends State<SearchCity> {
                 ),
               ),
               controller: _searchController,
-              textInputAction: TextInputAction.done,
+              autofocus: true,
+              textInputAction: TextInputAction.search,
               keyboardType: TextInputType.text,
               inputFormatters: [
                 FilteringTextInputFormatter.deny(RegExp(r'[0-9]')),
