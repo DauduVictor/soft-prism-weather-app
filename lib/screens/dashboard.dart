@@ -32,6 +32,12 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   /// Variable to hold the curve animation
   late CurvedAnimation _curve;
 
+  /// Variable to hold the color value for the snapshot animation
+  late Animation _flashTween;
+
+  /// Variable to hold the curve animation
+  late CurvedAnimation _snapCurve;
+
   ///Instantiating a class for [FutureValues]
   var _futureValue = FutureValues();
 
@@ -85,8 +91,8 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
   void _getUserLocation() async{
     await location.getLocation();
       setState((){
-        lat = location.lat;
-        lon = location.long;
+        lat = location.lat; //6.5;
+        lon = location.lat; //3.3; location.long;
       });
     getAddress(lat, lon);
   }
@@ -109,7 +115,7 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
       });
       _getAllWeatherFutureForecast();
     }).catchError((e) {
-      if(!mounted)return;
+      if(!mounted) return;
       Functions.showMessage(e);
     });
   }
@@ -234,6 +240,9 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     _futureValue.getDescriptionHistory();
   }
 
+  /// bool Variable to hold the state of the snapshot which is determined by [_controller]
+  bool _showSnap = false;
+
   @override
   void initState() {
     super.initState();
@@ -243,17 +252,30 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
     _getUserLocation();
     _getCurrentWeatherData();
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 1700),
+      duration: const Duration(milliseconds: 1200),
       vsync: this
     );
 
     _controller.addListener(() {
-      setState(() {});
+      setState(() {
+        if(_controller.value > 0.7) {
+          setState(() => _showSnap = true);
+        }
+        else {
+          _showSnap = false;
+        }
+      });
     });
 
-    _controller.repeat();
+    _controller.repeat(
+      reverse: true
+    );
 
     _curve = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
+
+    _snapCurve = CurvedAnimation(parent: _controller, curve: Curves.linear);
+
+    _flashTween = ColorTween(begin: Colors.transparent, end: Colors.white.withOpacity(0.37)).animate(_snapCurve);
 
   }
 
@@ -367,53 +389,69 @@ class _DashboardState extends State<Dashboard> with TickerProviderStateMixin{
                           AnimatedBuilder(
                             animation: _controller,
                             builder: (context, child) {
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.pushNamed(context, SearchCity.id);
-                                },
-                                child: Material(
-                                  color: Colors.transparent,
-                                  elevation: 3,
-                                  borderRadius: BorderRadius.circular(19),
-                                  shadowColor: kPurpleColor.withOpacity(0.1),
-                                  child: Container(
-                                    clipBehavior: Clip.hardEdge,
-                                    padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 9.0),
+                              return Stack(
+                                alignment: AlignmentDirectional.center,
+                                children: [
+                                  Container(
+                                    height: 58,
+                                    width: 178.5,
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(19),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.white.withOpacity(0.07),
-                                            spreadRadius: _curve.value * 12,
-                                          ),
-                                        ]
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: const [
-                                        Text(
-                                          'Custom search',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        SizedBox(width: 5),
-                                        Icon(
-                                          Icons.search,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
-                                      ],
+                                      border: Border.all(
+                                        width: 1.7,
+                                        color: _showSnap == true ? _flashTween.value : Colors.transparent,
+                                      ),
                                     ),
                                   ),
-                                ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Navigator.pushNamed(context, SearchCity.id);
+                                    },
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      elevation: 3,
+                                      borderRadius: BorderRadius.circular(19),
+                                      shadowColor: kPurpleColor.withOpacity(0.1),
+                                      child: Container(
+                                        clipBehavior: Clip.hardEdge,
+                                        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 9.0),
+                                        decoration: BoxDecoration(
+                                            color: Colors.white.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(19),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.white.withOpacity(0.07),
+                                                spreadRadius: _curve.value * 12,
+                                              ),
+                                            ]
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: const [
+                                            Text(
+                                              'Custom search',
+                                              style: TextStyle(
+                                                fontSize: 18,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            SizedBox(width: 5),
+                                            Icon(
+                                              Icons.search,
+                                              color: Colors.white,
+                                              size: 20,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               );
                             },
                           ),
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 20),
                           InkWell(
                             onTap: () {
                               showModalBottomSheet(

@@ -37,6 +37,7 @@ class UserDataSource {
       return _netUtil.get(GET_WEATHER_DATA + 'lat=$lat&lon=$long' + API_KEY).then((res) {
         file.writeAsStringSync(jsonEncode(res), mode: FileMode.append);
         return WeatherData.fromJson(res);
+        print('me');
       }).catchError((e){
         errorHandler.handleError(e);
       });
